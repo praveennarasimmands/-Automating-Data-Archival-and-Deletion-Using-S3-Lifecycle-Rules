@@ -1,4 +1,4 @@
-### **Project Title: Automating Data Archival and Deletion Using S3 Lifecycle Rules**
+# **Automating Data Archival and Deletion Using S3 Lifecycle Rules**
 
 ### **Problem Statement**
 
@@ -41,7 +41,6 @@ s3-lifecycle-project/
 ├── README.md                    # Project description and setup instructions
 ├── requirements.txt              # Python dependencies
 ├── s3_lifecycle_policy.py        # Script to create S3 lifecycle policies
-├── s3_lambda_trigger.py          # Script to trigger custom Lambda actions (optional)
 ├── config/
 │   └── s3_config.py              # S3 configuration file (bucket names, regions, etc.)
 └── logs/
@@ -62,88 +61,14 @@ pip install boto3
 
 ### **2. Set Up S3 Lifecycle Policies**
 
-Lifecycle policies will help transition and delete data based on predefined criteria.
-
 #### **s3_lifecycle_policy.py**
 
-```python
-import boto3
-import logging
-from config.s3_config import BUCKET_NAME
+Lifecycle policies will help transition and delete data based on predefined criteria.
 
-# Set up logging
-logging.basicConfig(filename='logs/lifecycle_logs.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
-
-def create_lifecycle_policy(bucket_name):
-    s3 = boto3.client('s3')
-
-    lifecycle_configuration = {
-        'Rules': [
-            {
-                'ID': 'MoveToGlacierAfter30Days',
-                'Status': 'Enabled',
-                'Prefix': '',  # Apply to all objects
-                'Transitions': [
-                    {
-                        'Days': 30,  # Transition to Glacier after 30 days
-                        'StorageClass': 'GLACIER'
-                    },
-                    {
-                        'Days': 365,  # Transition to Glacier Deep Archive after 1 year
-                        'StorageClass': 'GLACIER_DEEP_ARCHIVE'
-                    }
-                ],
-                'Expiration': {
-                    'Days': 3650  # Delete objects after 10 years (for compliance)
-                },
-            },
-        ]
-    }
-
-    try:
-        # Apply lifecycle policy to the bucket
-        response = s3.put_bucket_lifecycle_configuration(
-            Bucket=bucket_name,
-            LifecycleConfiguration=lifecycle_configuration
-        )
-        logging.info(f"Successfully applied lifecycle policy to {bucket_name}")
-        return response
-    except Exception as e:
-        logging.error(f"Error applying lifecycle policy: {e}")
-        return None
-
-if __name__ == "__main__":
-    create_lifecycle_policy(BUCKET_NAME)
-```
 
 ### **3. Integrate with AWS Lambda (Optional)**
 
 You can integrate Lambda functions to perform additional actions such as data processing before transitioning or deleting objects.
-
-#### **s3_lambda_trigger.py**
-
-This script demonstrates how to set up a Lambda function to trigger when an object is about to transition to Glacier or be deleted.
-
-```python
-import boto3
-import logging
-
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-
-def lambda_handler(event, context):
-    # Extract S3 event information
-    s3_event = event['Records'][0]['s3']
-    bucket_name = s3_event['bucket']['name']
-    object_key = s3_event['object']['key']
-
-    # Custom action before transition (e.g., log object info)
-    logging.info(f"Preparing to transition object {object_key} in bucket {bucket_name}.")
-
-    # Additional processing or data validation can go here
-
-    return {'statusCode': 200, 'body': 'Lambda executed successfully.'}
-```
 
 ### **4. S3 Configuration**
 
@@ -151,10 +76,6 @@ def lambda_handler(event, context):
 
 This file contains the configuration values such as bucket names, regions, and retention periods.
 
-```python
-BUCKET_NAME = 'your-bucket-name'  # Replace with your S3 bucket name
-REGION = 'us-east-1'  # Replace with your region
-```
 
 ### **5. Logs**
 
