@@ -56,7 +56,7 @@ s3-lifecycle-project/
 Install **Boto3**, the AWS SDK for Python, which is needed to interact with S3 services.
 
 ```bash
-pip install boto3
+pip install -r requirements.txt
 ```
 
 ### **2. Set Up S3 Lifecycle Policies**
